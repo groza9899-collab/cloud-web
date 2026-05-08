@@ -596,4 +596,17 @@ def get_service_reviews(service_id: int, db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch reviews: {str(e)}")
 
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+import os
+
+# Put this at the very bottom of main.py
+frontend_path = os.path.join(os.path.dirname(__file__), "..", "frontend", "build")
+if os.path.exists(frontend_path):
+    app.mount("/", StaticFiles(directory=frontend_path, html=True), name="static")
+
+@app.exception_handler(404)
+async def not_found_exception_handler(request, exc):
+    return FileResponse(os.path.join(frontend_path, "index.html"))
+
 # Run with: uvicorn main:app --reload
